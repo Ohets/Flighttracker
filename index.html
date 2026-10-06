@@ -68,11 +68,65 @@ el('free').onclick=fetchFlights;el('details').onclick=premiumDetails;el('follow'
 </script>
 <script>
 (function(){
-  var menu=document.getElementById('menu');
-  var panel=document.getElementById('panel');
-  var close=document.getElementById('close');
+  var menu=document.getElementById('menu'),panel=document.getElementById('panel'),close=document.getElementById('close');
   if(menu&&panel) menu.onclick=function(){panel.classList.toggle('show')};
   if(close&&panel) close.onclick=function(){panel.classList.remove('show')};
+
+  function setStatus(t){var s=document.getElementById('status');if(s)s.textContent=t}
+  function initMap(){
+    if(window.__pfMap)return window.__pfMap;
+    if(!window.L){setStatus('Kartenbibliothek konnte nicht geladen werden.');return null}
+    try{
+      window.__pfMap=L.map('map',{zoomControl:true}).setView([48.2082,16.3738],6);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(window.__pfMap);
+      setTimeout(function(){window.__pfMap.invalidateSize()},300);
+      setStatus('Karte bereit. Du kannst Flüge laden.');
+      return window.__pfMap;
+    }catch(e){console.error(e);setStatus('Kartenfehler: '+e.message);return null}
+  }
+  function api(path,params){
+    var q=[];
+    Object.keys(params||{}).forEach(function(k){if(params[k]!==undefined&&params[k]!==null&&params[k]!=='')q.push(encodeURIComponent(k)+'='+encodeURIComponent(params[k]))});
+    return fetch('https://spboyylbuftzzpfkyhsy.supabase.co/functions/v1/airlabs-proxy'+path+(q.length?'?'+q.join('&'):''),{
+      headers:{apikey:'sb_publishable_ZnBzx2f0CgQEezfJ8L0OA_HIPuIPij',Authorization:'Bearer sb_publishable_ZnBzx2f0CgQEezfJ8L0OA_HIPuIPij'}
+    });
+  }
+  function loadFlights(){
+    var map=initMap();if(!map)return;
+    var b=map.getBounds(),bbox=b.getSouth()+','+b.getWest()+','+b.getNorth()+','+b.getEast();
+    setStatus('Flüge werden geladen…');
+    api('/api/v9/flights',{bbox:bbox}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}).then(function(d){
+      if(d.error)throw new Error(d.error.message||'AirLabs Fehler');
+      var flights=Array.isArray(d.response)?d.response:[],count=0;
+      if(window.__pfMarkers){window.__pfMarkers.forEach(function(m){map.removeLayer(m)})}
+      window.__pfMarkers=[];
+      flights.forEach(function(f){
+        var lat=Number(f.lat),lng=Number(f.lng);if(!isFinite(lat)||!isFinite(lng))return;
+        var m=L.marker([lat,lng]).addTo(map).bindPopup('<b>Flug:</b> '+String(f.flight_iata||f.flight_icao||f.flight_number||'Unbekannt'));
+        window.__pfMarkers.push(m);count++;
+      });
+      setStatus(count+' Flüge angezeigt.');
+    }).catch(function(e){console.error(e);setStatus('Flüge konnten nicht geladen werden: '+e.message)});
+  }
+  function searchFlight(){
+    var q=(document.getElementById('search').value||'').trim().toUpperCase();
+    if(!q){setStatus('Bitte Flugnummer eingeben.');return}
+    api('/api/v9/flights',{flight_iata:q}).then(function(r){return r.json()}).then(function(d){
+      var f=Array.isArray(d.response)&&d.response[0];if(!f){setStatus('Flug nicht gefunden.');return}
+      var map=initMap();if(!map)return;var lat=Number(f.lat),lng=Number(f.lng);
+      if(!isFinite(lat)||!isFinite(lng)){setStatus('Flug ist aktuell ohne Position.');return}
+      map.setView([lat,lng],10);L.marker([lat,lng]).addTo(map).bindPopup('<b>Flug:</b> '+(f.flight_iata||f.flight_icao||q)).openPopup();
+      setStatus('Flug '+(f.flight_iata||f.flight_icao||q)+' gefunden.');
+    }).catch(function(e){setStatus('Suche fehlgeschlagen: '+e.message)});
+  }
+  setTimeout(function(){
+    initMap();
+    var ids=['free','live','searchBtn','details','follow','route','stop','buy','modalPay','modalClose'];
+    ids.forEach(function(id){var b=document.getElementById(id);if(b)b.onclick=function(){}});
+    var free=document.getElementById('free'),searchBtn=document.getElementById('searchBtn');
+    if(free)free.onclick=loadFlights;
+    if(searchBtn)searchBtn.onclick=searchFlight;
+  },200);
 })();
 </script>
 </body>
