@@ -1,21 +1,19 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   if (req.method !== "GET") {
-    return new Response("Method not allowed", {
-      status: 405,
-      headers: corsHeaders,
-    });
+    return new Response(
+      JSON.stringify({ error: { message: "Method not allowed" } }),
+      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   }
 
   const apiKey = Deno.env.get("AIRLABS_API_KEY");
@@ -28,9 +26,13 @@ serve(async (req) => {
 
   const requestUrl = new URL(req.url);
   const allowed = ["/api/v9/flights", "/api/v9/flight", "/api/v9/airports"];
-  const path = allowed.find((p) => requestUrl.pathname.endsWith(p)) || "";
-  if (!allowed.includes(path)) {
-    return new Response("Not found", { status: 404, headers: corsHeaders });
+  const path = allowed.find((p) => requestUrl.pathname.endsWith(p));
+
+  if (!path) {
+    return new Response(
+      JSON.stringify({ error: { message: "Not found" } }),
+      { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   }
 
   const upstream = new URL("https://airlabs.co" + path);
@@ -41,33 +43,24 @@ serve(async (req) => {
 
   try {
     const response = await fetch(upstream.toString(), {
+      method: "GET",
       headers: { Accept: "application/json" },
     });
+
     const body = await response.text();
-
     const headers = new Headers(corsHeaders);
-    headers.set(
-      "Content-Type",
-      response.headers.get("Content-Type") || "application/json",
-    );
-    headers.set(
-      "Cache-Control",
-      path === "/api/v9/airports" ? "public, max-age=300" : "no-store",
-    );
+    headers.set("Content-Type", response.headers.get("Content-Type") || "application/json");
+    headers.set("Cache-Control", path === "/api/v9/airports" ? "public, max-age=300" : "no-store");
 
-    return new Response(body, {
-      status: response.status,
-      headers,
-    });
+    return new Response(body, { status: response.status, headers });
   } catch (error) {
     return new Response(
       JSON.stringify({
-        error: { message: error instanceof Error ? error.message : "AirLabs request failed." },
+        error: {
+          message: error instanceof Error ? error.message : "AirLabs request failed.",
+        },
       }),
-      {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
+      { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
