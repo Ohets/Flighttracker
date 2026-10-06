@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     headers.set("Content-Type", response.headers.get("Content-Type") || "application/json");
     headers.set("Cache-Control", path === "/api/v9/airports" ? "public, max-age=300" : "no-store");
 
-    return new Response(body, { status: response.status, headers });
+    if (!response.ok) {\n      return new Response(JSON.stringify({ error: { message: `AirLabs HTTP ${response.status}`, upstream: body } }), { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });\n    }\n\n    return new Response(body, { status: response.status, headers });
   } catch (error) {
     return new Response(
       JSON.stringify({
