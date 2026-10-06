@@ -39,7 +39,7 @@ var storageOK=true;try{localStorage.getItem('x')}catch(e){storageOK=false}var sa
 function save(){if(storageOK){try{localStorage.setItem(CREDIT_KEY,String(credits))}catch(e){}}el('credits').textContent=credits}
 ['free','live','stop','details','follow','route','searchBtn','buy','modalPay','modalClose','menu','close'].forEach(function(id){var b=el(id);if(b)b.onclick=function(){}});
 var map=null;
-if(window.L){try{map=L.map('map').setView([50.1109,8.6821],5);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map)}catch(e){console.error(e);el('status').textContent='Karte konnte nicht gestartet werden. '+e.message}}else{el('status').textContent='Kartenbibliothek nicht geladen. Die Flugfunktionen können trotzdem geöffnet werden.'}
+if(window.L){try{map=L.map('map').setView([50.1109,8.6821],5);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map)}catch(e){console.error(e);el('status').textContent='Karte konnte nicht gestartet werden. '+e.message}}else{el('status').textContent='Kartenbibliothek nicht geladen. Die Flugfunktionen können trotzdem geöffnet werden.'}
 var markers=[],liveTimer=null,busy=false,airportCache={},selectedFlight=null,selectedMarker=null,routeLine=null;
 function status(t){el('status').textContent=t}
 function clear(){for(var i=0;i<markers.length;i++)map.removeLayer(markers[i]);markers=[]}
