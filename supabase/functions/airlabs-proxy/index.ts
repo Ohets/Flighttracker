@@ -1,6 +1,6 @@
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
 };
 
@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  if (req.method !== "GET") {
+  if (req.method !== "GET" && req.method !== "POST") {
     return new Response(
       JSON.stringify({ error: { message: "Method not allowed" } }),
       { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -25,6 +25,18 @@ Deno.serve(async (req) => {
   }
 
   const requestUrl = new URL(req.url);
+  if (req.method === "POST") {
+    try {
+      const body = await req.json();
+      if (body && typeof body === "object") {
+        for (const [key, value] of Object.entries(body)) {
+          if (value !== undefined && value !== null && value !== "") requestUrl.searchParams.set(key, String(value));
+        }
+      }
+    } catch (_) {
+      // Empty or invalid JSON body: continue with query parameters.
+    }
+  }
   const allowed = ["/api/v9/flights", "/api/v9/flight", "/api/v9/airports"];
   const path = allowed.find((p) => requestUrl.pathname.endsWith(p));
 
