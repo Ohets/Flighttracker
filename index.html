@@ -66,5 +66,14 @@ function checkPayment(){var started=null;try{started=localStorage.getItem(PAYMEN
 el('free').onclick=fetchFlights;el('details').onclick=premiumDetails;el('follow').onclick=followFlight;el('route').onclick=showRoute;el('searchBtn').onclick=searchFlight;el('search').onkeydown=function(e){if(e.key==='Enter')searchFlight()};el('live').onclick=function(){if(credits<50){el('modal').classList.add('show');return}credits-=50;save();startLive()};el('stop').onclick=stopLive;el('buy').onclick=beginPayPal;el('modalPay').onclick=beginPayPal;el('modalClose').onclick=function(){el('modal').classList.remove('show')};el('menu').onclick=function(){el('panel').classList.toggle('show')};el('close').onclick=function(){el('panel').classList.remove('show')};window.addEventListener('focus',checkPayment);window.addEventListener('pageshow',checkPayment);document.addEventListener('visibilitychange',function(){if(!document.hidden)checkPayment();else if(liveTimer)stopLive()});window.addEventListener('resize',function(){setTimeout(function(){if(map)map.invalidateSize()},100)});setTimeout(function(){if(map)map.invalidateSize();status('Karte bereit. Du kannst Flüge suchen oder laden.')},500);
 })();
 </script>
+<script>
+(function(){
+  var menu=document.getElementById('menu');
+  var panel=document.getElementById('panel');
+  var close=document.getElementById('close');
+  if(menu&&panel) menu.onclick=function(){panel.classList.toggle('show')};
+  if(close&&panel) close.onclick=function(){panel.classList.remove('show')};
+})();
+</script>
 </body>
 </html>
