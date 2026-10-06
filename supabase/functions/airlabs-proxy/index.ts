@@ -16,10 +16,10 @@ Deno.serve(async (req) => {
     );
   }
 
-  const apiKey = Deno.env.get("AIRLABS_API_KEY");
+  const apiKey = Deno.env.get("AIRLABS_API_KEY")?.trim();
   if (!apiKey) {
     return new Response(
-      JSON.stringify({ error: { message: "AIRLABS_API_KEY is not configured in Supabase." } }),
+      JSON.stringify({ error: { message: "AIRLABS_API_KEY is missing. Please set the Supabase Edge Function secret named AIRLABS_API_KEY." } }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     headers.set("Content-Type", response.headers.get("Content-Type") || "application/json");
     headers.set("Cache-Control", path === "/api/v9/airports" ? "public, max-age=300" : "no-store");
 
-    if (!response.ok) {\n      return new Response(JSON.stringify({ error: { message: `AirLabs HTTP ${response.status}`, upstream: body } }), { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });\n    }\n\n    return new Response(body, { status: response.status, headers });
+    if (!response.ok) {\n      return new Response(JSON.stringify({ error: { message: `AirLabs HTTP ${response.status}`, upstream: body, keyConfigured: true } }), { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });\n    }\n\n    return new Response(body, { status: response.status, headers });
   } catch (error) {
     return new Response(
       JSON.stringify({
