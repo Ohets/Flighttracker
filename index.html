@@ -11,7 +11,7 @@
 </head>
 <body>
 <div id="map"></div>
-<div class="top"><button id="menu" class="menu">☰</button><div class="logo">✈️ ProFlight Tracker</div><div class="credits">💰 <span id="credits">500</span></div></div>
+<div class="top"><button id="menu" class="menu" type="button" onclick="document.getElementById('panel').classList.toggle('show')">☰</button><div class="logo">✈️ ProFlight Tracker</div><div class="credits">💰 <span id="credits">500</span></div></div>
 <div id="loading" class="loading">Flüge werden geladen…</div>
 <div id="panel" class="panel">
 <button id="close" class="btn gray close">Karte anzeigen</button>
@@ -33,7 +33,7 @@
 <script>
 (function(){
 'use strict';
-var AIRLABS_PROXY='https://spboyylbuftzzpfkyhsy.supabase.co/functions/v1/airlabs-proxy',SUPABASE_PUBLISHABLE_KEY='sb_publishable_ZnBzx2f0CgQEezfFj8L0OA_HIPuIPij',PAYPAL='https://www.paypal.com/donate/?hosted_button_id=HF3HYZ9J3QV4U',CREDIT_KEY='tracker_credits',PAYMENT_KEY='tracker_paypal_started',WAIT=30000;
+var AIRLABS_PROXY='https://spboyylbuftzzpfkyhsy.supabase.co/functions/v1/airlabs-proxy',SUPABASE_PUBLISHABLE_KEY='sb_publishable_ZnBzx2f0CgQEezfJ8L0OA_HIPuIPij',PAYPAL='https://www.paypal.com/donate/?hosted_button_id=HF3HYZ9J3QV4U',CREDIT_KEY='tracker_credits',PAYMENT_KEY='tracker_paypal_started',WAIT=30000;
 function el(id){return document.getElementById(id)}
 var storageOK=true;try{localStorage.getItem('x')}catch(e){storageOK=false}var saved=storageOK?localStorage.getItem(CREDIT_KEY):null,credits=saved===null?500:parseInt(saved,10);if(isNaN(credits)||credits<0)credits=500;el('credits').textContent=credits;
 function save(){if(storageOK){try{localStorage.setItem(CREDIT_KEY,String(credits))}catch(e){}}el('credits').textContent=credits}
