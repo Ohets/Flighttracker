@@ -19,8 +19,8 @@ Deno.serve(async (req) => {
   const apiKey = Deno.env.get("AIRLABS_API_KEY")?.trim();
   if (!apiKey) {
     return new Response(
-      JSON.stringify({ error: { message: "AIRLABS_API_KEY is missing. Please set the Supabase Edge Function secret named AIRLABS_API_KEY." } }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({ ok: false, keyConfigured: false, error: { message: "AIRLABS_API_KEY is missing. Please set the Supabase Edge Function secret named AIRLABS_API_KEY." } }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 
