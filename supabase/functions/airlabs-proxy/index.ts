@@ -27,12 +27,8 @@ serve(async (req) => {
   }
 
   const requestUrl = new URL(req.url);
-  const prefix = "/airlabs-proxy";
-  const path = requestUrl.pathname.startsWith(prefix)
-    ? requestUrl.pathname.slice(prefix.length)
-    : "";
-
   const allowed = ["/api/v9/flights", "/api/v9/flight", "/api/v9/airports"];
+  const path = allowed.find((p) => requestUrl.pathname.endsWith(p)) || "";
   if (!allowed.includes(path)) {
     return new Response("Not found", { status: 404, headers: corsHeaders });
   }
