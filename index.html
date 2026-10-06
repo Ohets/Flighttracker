@@ -1,400 +1,231 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commercial Live Flight Tracker</title>
-    <!-- Leaflet CSS für die Karte -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background-color: #f4f6f9;
-        }
-
-        header {
-            background-color: #1a252f;
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .logo h1 {
-            font-size: 20px;
-            letter-spacing: 1px;
-        }
-
-        .credit-box {
-            background-color: #2c3e50;
-            padding: 8px 15px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-        }
-
-        #credit-count {
-            color: #2ecc71;
-        }
-
-        .buy-btn {
-            background-color: #e67e22;
-            color: white;
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 13px;
-            transition: background 0.2s;
-        }
-
-        .buy-btn:hover {
-            background-color: #d35400;
-        }
-
-        .main-container {
-            display: flex;
-            flex: 1;
-            position: relative;
-        }
-
-        #map {
-            flex: 1;
-            height: 100%;
-        }
-
-        .controls-panel {
-            width: 320px;
-            background: white;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            z-index: 999;
-        }
-
-        .panel-section {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-        }
-
-        h3 {
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 16px;
-        }
-
-        button.premium-action {
-            width: 100%;
-            background-color: #2980b9;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            transition: background 0.2s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-        }
-
-        button.premium-action:hover {
-            background-color: #3498db;
-        }
-
-        button.premium-action span.cost {
-            background: rgba(0,0,0,0.2);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .status-off { background: #e74c3c; color: white; }
-        .status-on { background: #2ecc71; color: white; }
-
-        /* Modal für Payment-Aufforderung */
-        .modal-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal-box {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-
-        .modal-box h2 {
-            color: #c0392b;
-            margin-bottom: 15px;
-        }
-
-        .modal-box p {
-            color: #555;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .modal-paypal-link {
-            display: inline-block;
-            background-color: #0070ba;
-            color: white;
-            text-decoration: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 16px;
-            transition: background 0.2s;
-        }
-
-        .modal-paypal-link:hover {
-            background-color: #005ea6;
-        }
-
-        .close-modal {
-            margin-top: 15px;
-            display: inline-block;
-            color: #7f8c8d;
-            cursor: pointer;
-            font-size: 13px;
-            text-decoration: underline;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ProFlight Tracker</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#07111f}
+#map{position:fixed;inset:0;width:100%;height:100%;z-index:1}
+header{position:fixed;top:0;left:0;right:0;height:58px;z-index:1000;background:rgba(5,15,28,.95);color:#fff;display:flex;align-items:center;gap:10px;padding:8px 12px;box-shadow:0 2px 12px #0008}
+.logo{font-weight:800;font-size:18px;white-space:nowrap}
+.credits{margin-left:auto;background:#172a40;border-radius:10px;padding:8px 12px;font-weight:700}
+#menuBtn{display:none;border:0;border-radius:9px;background:#1769aa;color:#fff;font-size:20px;padding:7px 11px}
+#panel{position:fixed;z-index:1100;top:70px;right:12px;width:320px;max-height:calc(100vh - 84px);overflow:auto;background:rgba(255,255,255,.97);border-radius:14px;padding:15px;box-shadow:0 8px 30px #0008}
+h2{font-size:18px;margin:0 0 10px;color:#222}
+.small{font-size:13px;color:#555;line-height:1.4}
+button{width:100%;border:0;border-radius:9px;padding:12px;margin:6px 0;font-size:14px;font-weight:700;cursor:pointer;background:#1769aa;color:#fff}
+button.premium{background:#7a4fd1}
+button.secondary{background:#607080}
+button:disabled{opacity:.55}
+.status{margin-top:8px;padding:9px;border-radius:9px;background:#edf2f7;color:#222;font-size:13px;line-height:1.35}
+#closeBtn{display:none}
+#loading{position:fixed;z-index:1200;top:70px;left:50%;transform:translateX(-50%);display:none;background:#07111f;color:#fff;padding:8px 14px;border-radius:20px;border:1px solid #456;font-size:13px}
+.modal{display:none;position:fixed;inset:0;z-index:2000;background:#0009;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.modalBox{max-width:420px;width:100%;background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 15px 50px #000}
+.modalBox h3{color:#c0392b}
+.modalBox a{display:inline-block;background:#0070ba;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:bold}
+.leaflet-control-zoom{margin-top:68px!important}
+@media(max-width:700px){
+ header{height:52px;padding:7px 9px}
+ .logo{font-size:16px}
+ .credits{font-size:13px;padding:7px 9px}
+ #menuBtn{display:block}
+ #panel{top:60px;right:8px;left:8px;width:auto;max-height:calc(100vh - 68px);display:none}
+ #panel.open{display:block}
+ #closeBtn{display:block}
+ .leaflet-control-zoom{margin-top:62px!important}
+}
+</style>
 </head>
 <body>
+<div id="map"></div>
 
-    <header>
-        <div class="logo">
-            <h1>✈️ ProFlight Tracker</h1>
-        </div>
-        <div class="credit-box">
-            <span>Credits: <span id="credit-count">100</span></span>
-            <a href="https://www.paypal.com/donate/?hosted_button_id=HF3HYZ9J3QV4U" target="_blank" class="buy-btn">Aufladen</a>
-        </div>
-    </header>
+<header>
+<button id="menuBtn" aria-label="Menü">☰</button>
+<div class="logo">✈️ ProFlight Tracker</div>
+<div class="credits">💰 <span id="credit-count">500</span></div>
+</header>
 
-    <div class="main-container">
-        <!-- Landkarte -->
-        <div id="map"></div>
+<div id="loading">Flüge werden geladen…</div>
 
-        <!-- Seitenleiste für Steuerungen -->
-        <div class="controls-panel">
-            <div class="panel-section">
-                <h3>Standard Funktionen</h3>
-                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Manuelle Abfrage der aktuellen Flugzeuge im sichtbaren Bereich.</p>
-                <button class="premium-action" style="background-color: #7f8c8d;" onclick="fetchFlights(false)">Flüge laden (Kostenlos)</button>
-            </div>
+<aside id="panel">
+<button id="closeBtn" class="secondary">Karte anzeigen</button>
+<h2>Flugverkehr</h2>
+<div class="small">Die Karte befindet sich direkt im Hintergrund. Verschiebe und zoome sie frei.</div>
+<button id="freeBtn">✈️ Flüge laden – kostenlos</button>
+<button id="premiumBtn" class="premium">📡 Live-Radar – 50 Credits</button>
+<button id="stopBtn" class="secondary" style="display:none">⏹ Live-Radar stoppen</button>
+<div id="status" class="status">Karte wird initialisiert…</div>
+<button id="buyBtn" class="secondary">💳 Credits über PayPal</button>
+</aside>
 
-            <div class="panel-section">
-                <h3>Premium Live-Radar</h3>
-                <p style="font-size: 13px; color: #666; margin-bottom: 12px;">Aktiviert die automatische Aktualisierung alle 10 Sekunden für Echtzeit-Tracking.</p>
-                <button class="premium-action" onclick="activatePremiumFeature()">
-                    Live-Autorefresh <span class="cost">-50 Credits</span>
-                </button>
-                <div>
-                    Status: <span id="premium-status" class="status-badge status-off">Inaktiv</span>
-                </div>
-            </div>
-        </div>
+<div id="creditsModal" class="modal">
+<div class="modalBox">
+<h3>Keine Credits mehr</h3>
+<p>Du benötigst 50 Credits für den Live-Radar.</p>
+<a href="https://www.paypal.com/donate/?hosted_button_id=HF3HYZ9J3QV4U" target="_blank" rel="noopener">PayPal öffnen</a>
+<br><br>
+<button id="modalClose" class="secondary">Schließen</button>
+</div>
+</div>
 
-        <!-- Bezahl-Aufforderung Overlay -->
-        <div class="modal-overlay" id="payment-modal">
-            <div class="modal-box">
-                <h2>Keine Credits mehr!</h2>
-                <p>Für diese Funktion benötigst du 50 Credits. Dein Guthaben ist leider aufgebraucht. Klicke unten, um neue Credits zu erwerben.</p>
-                <a href="https://www.paypal.com/donate/?hosted_button_id=HF3HYZ9J3QV4U" target="_blank" class="modal-paypal-link" onclick="simulateCreditPurchase()">Credits über PayPal kaufen</a>
-                <div class="close-modal" onclick="toggleModal(false)">Schließen</div>
-            </div>
-        </div>
-    </div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const AIRLABS_API_KEY="840b01bb-121e-468a-87f6-c46693826b72";
+const PAYPAL_URL="https://www.paypal.com/donate/?hosted_button_id=HF3HYZ9J3QV4U";
+const CREDIT_KEY="tracker_credits";
+const LIVE_COST=50;
 
-    <!-- Leaflet JS für die Karte -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // Dein persönlicher AirLabs API-Key ist hier erfolgreich hinterlegt
-        const AIRLABS_API_KEY = "840b01bb-121e-468a-87f6-c46693826b72"; 
+let credits=localStorage.getItem(CREDIT_KEY)===null?500:Math.max(0,parseInt(localStorage.getItem(CREDIT_KEY),10)||0);
+let markers=[];
+let liveTimer=null;
+let requestRunning=false;
 
-        // Initialisierung der App-Daten im LocalStorage
-        let userCredits = parseInt(localStorage.getItem('tracker_credits')) || 100;
-        let premiumActive = false;
-        let refreshInterval = null;
-        let flightMarkers = [];
+const $=id=>document.getElementById(id);
+$("credit-count").textContent=credits;
 
-        // UI Updates
-        document.getElementById('credit-count').innerText = userCredits;
+const map=L.map("map",{zoomControl:true}).setView([50.1109,8.6821],5);
 
-        // Karte initialisieren (Zentriert auf Mitteleuropa)
-        const map = L.map('map').setView([50.1109, 8.6821], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+maxZoom:19,
+attribution:"© OpenStreetMap contributors"
+}).addTo(map);
 
-        // Modal an-/ausschalten
-        function toggleModal(show) {
-            const modal = document.getElementById('payment-modal');
-            if (show) modal.classList.add('active');
-            else modal.classList.remove('active');
-        }
+function saveCredits(){
+localStorage.setItem(CREDIT_KEY,String(credits));
+$("credit-count").textContent=credits;
+}
 
-        // Credits abziehen und speichern
-        function deductCredits(amount) {
-            if (userCredits >= amount) {
-                userCredits -= amount;
-                localStorage.setItem('tracker_credits', userCredits);
-                document.getElementById('credit-count').innerText = userCredits;
-                return true;
-            }
-            return false;
-        }
+function setStatus(text){$("status").textContent=text}
 
-        // Flugdaten von AirLabs API abrufen
-        function fetchFlights(isPremiumCall = false) {
-            const bounds = map.getBounds();
-            const bboxParam = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
-            
-            // AirLabs Bounding-Box API Endpoint
-            const apiUrl = `https://airlabs.co/api/v9/flights?api_key=${AIRLABS_API_KEY}&bbox=${bboxParam}`;
+function escapeHtml(value){
+return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+}
 
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    // Alte Marker löschen
-                    flightMarkers.forEach(marker => map.removeLayer(marker));
-                    flightMarkers = [];
+function clearMarkers(){
+markers.forEach(marker=>map.removeLayer(marker));
+markers=[];
+}
 
-                    if (!data.response || !Array.isArray(data.response)) return;
+function getBbox(){
+const b=map.getBounds();
+return [b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].join(",");
+}
 
-                    // Neue Marker setzen
-                    data.response.forEach(flight => {
-                        const callsign = flight.flight_icao || flight.flight_number || 'Unbekannt';
-                        const latitude = flight.lat;
-                        const longitude = flight.lng;
-                        const altitude = flight.alt ? Math.round(flight.alt) + 'm' : 'N/A';
-                        const velocity = flight.speed ? Math.round(flight.speed) + ' km/h' : 'N/A';
-                        const heading = flight.dir || 0;
+function addFlight(flight){
+const lat=Number(flight.lat);
+const lng=Number(flight.lng);
+if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
 
-                        if (latitude && longitude) {
-                            // Flugzeug-Icon mit CSS-Rotation basierend auf dem Kurs (Direction)
-                            const planeIcon = L.divIcon({
-                                html: `<div style="transform: rotate(${heading}deg); font-size: 20px; transition: transform 0.3s;">✈️</div>`,
-                                className: 'plane-marker',
-                                iconSize: [20, 20],
-                                iconAnchor: [10, 10]
-                            });
+const heading=Number(flight.dir)||0;
+const icon=L.divIcon({
+className:"plane-marker",
+html:'<div style="font-size:23px;line-height:23px;transform:rotate('+heading+'deg);">✈️</div>',
+iconSize:[28,28],
+iconAnchor:[14,14]
+});
 
-                            const marker = L.marker([latitude, longitude], { icon: planeIcon })
-                                .bindPopup(`
-                                    <div style="font-family: sans-serif; font-size: 13px;">
-                                        <strong style="font-size: 14px; color: #2c3e50;">Flug: ${callsign}</strong><br>
-                                        <hr style="margin: 5px 0; border: 0; border-top: 1px solid #eee;">
-                                        <b>Geschwindigkeit:</b> ${velocity}<br>
-                                        <b>Höhe:</b> ${altitude}<br>
-                                        <b>Richtung:</b> ${heading}°
-                                    </div>
-                                `);
-                            
-                            flightMarkers.push(marker);
-                            marker.addTo(map);
-                        }
-                    });
-                })
-                .catch(err => {
-                    console.error("Fehler beim Laden der AirLabs-Daten:", err);
-                });
-        }
+const callsign=flight.flight_icao||flight.flight_iata||flight.flight_number||"Unbekannt";
+const marker=L.marker([lat,lng],{icon}).bindPopup(
+"<b>Flug: "+escapeHtml(callsign)+"</b><br>"+
+"Geschwindigkeit: "+escapeHtml(flight.speed||"-")+" km/h<br>"+
+"Höhe: "+escapeHtml(flight.alt||"-")+" ft<br>"+
+"Richtung: "+escapeHtml(heading)+"°"
+);
 
-        // Premium-Funktion aktivieren (Kostet 50 Credits)
-        function activatePremiumFeature() {
-            if (premiumActive) {
-                // Wenn bereits aktiv, ausschalten (ohne erneute Kosten)
-                stopPremium();
-                return;
-            }
+marker.addTo(map);
+markers.push(marker);
+}
 
-            // Versuche 50 Credits abzuziehen
-            if (deductCredits(50)) {
-                premiumActive = true;
-                document.getElementById('premium-status').innerText = "Aktiv (Live)";
-                document.getElementById('premium-status').className = "status-badge status-on";
-                
-                // Sofort laden und alle 10 Sekunden aktualisieren
-                fetchFlights(true);
-                refreshInterval = setInterval(() => {
-                    fetchFlights(true);
-                }, 10000);
-            } else {
-                // Wenn nicht genug Credits vorhanden sind -> Bezahlfenster anzeigen
-                toggleModal(true);
-            }
-        }
+async function fetchFlights(){
+if(requestRunning)return;
+requestRunning=true;
+$("loading").style.display="block";
+$("freeBtn").disabled=true;
+$("premiumBtn").disabled=true;
 
-        function stopPremium() {
-            premiumActive = false;
-            document.getElementById('premium-status').innerText = "Inaktiv";
-            document.getElementById('premium-status').className = "status-badge status-off";
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
-            }
-        }
+try{
+const url="https://airlabs.co/api/v9/flights?api_key="+encodeURIComponent(AIRLABS_API_KEY)+"&bbox="+encodeURIComponent(getBbox());
+const response=await fetch(url,{cache:"no-store"});
+if(!response.ok)throw new Error("HTTP "+response.status);
 
-        // Simulation für den Credit-Kauf (beim Klick auf den PayPal-Link)
-        function simulateCreditPurchase() {
-            setTimeout(() => {
-                userCredits += 100; // Dem Nutzer 100 neue Credits gutschreiben
-                localStorage.setItem('tracker_credits', userCredits);
-                document.getElementById('credit-count').innerText = userCredits;
-                toggleModal(false);
-                alert("Vielen Dank für deinen Kauf! Dir wurden 100 Credits gutgeschrieben.");
-            }, 2000);
-        }
+const data=await response.json();
+if(data.error)throw new Error(data.error.message||"AirLabs API Fehler");
 
-        // Flugdaten direkt beim App-Start einmalig laden
-        fetchFlights(false);
-    </script>
+const flights=Array.isArray(data.response)?data.response:[];
+clearMarkers();
+flights.forEach(addFlight);
+
+setStatus(flights.length+" Flüge angezeigt. Aktualisiert: "+new Date().toLocaleTimeString());
+}catch(error){
+console.error(error);
+setStatus("Flüge konnten nicht geladen werden: "+error.message);
+}finally{
+requestRunning=false;
+$("loading").style.display="none";
+$("freeBtn").disabled=false;
+$("premiumBtn").disabled=false;
+}
+}
+
+async function startLive(){
+if(liveTimer)return;
+await fetchFlights();
+liveTimer=setInterval(fetchFlights,10000);
+$("stopBtn").style.display="block";
+$("premiumBtn").style.display="none";
+setStatus("Live-Radar aktiv – Aktualisierung alle 10 Sekunden.");
+}
+
+function stopLive(){
+if(liveTimer){
+clearInterval(liveTimer);
+liveTimer=null;
+}
+$("stopBtn").style.display="none";
+$("premiumBtn").style.display="block";
+setStatus("Live-Radar gestoppt.");
+}
+
+$("freeBtn").onclick=fetchFlights;
+
+$("premiumBtn").onclick=()=>{
+if(credits<LIVE_COST){
+$("creditsModal").classList.add("open");
+return;
+}
+credits-=LIVE_COST;
+saveCredits();
+startLive();
+};
+
+$("stopBtn").onclick=stopLive;
+
+$("buyBtn").onclick=()=>window.open(PAYPAL_URL,"_blank","noopener");
+
+$("modalClose").onclick=()=>$("creditsModal").classList.remove("open");
+
+$("creditsModal").onclick=e=>{
+if(e.target===$("creditsModal"))$("creditsModal").classList.remove("open");
+};
+
+$("menuBtn").onclick=()=>$("panel").classList.toggle("open");
+$("closeBtn").onclick=()=>$("panel").classList.remove("open");
+
+window.addEventListener("resize",()=>setTimeout(()=>map.invalidateSize(),100));
+
+document.addEventListener("visibilitychange",()=>{
+if(document.hidden&&liveTimer)stopLive();
+});
+
+setTimeout(()=>{
+map.invalidateSize();
+setStatus("Karte bereit. Du kannst jetzt Flüge laden.");
+},500);
+</script>
 </body>
 </html>
