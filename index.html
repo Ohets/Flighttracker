@@ -104,9 +104,9 @@ function initCockpit3D(){
    var dt=Math.min(.05,(now-(cockpit3dLast||now))/1000);cockpit3dLast=now;
    if(cockpit3dRunning){
      var targetRoll=cockpit3dState.roll,targetPitch=cockpit3dState.pitch;
-     cam.rotation.x+=(targetPitch-cam.rotation.x)*Math.min(1,dt*4);
-     cam.rotation.y+=(targetRoll-cam.rotation.y)*Math.min(1,dt*4);
-     cam.rotation.z+=((-targetRoll*.16-cam.rotation.z)*Math.min(1,dt*3));
+     cam.rotation.x+=(targetPitch-cam.rotation.x)*Math.min(1,dt*3.2);
+     cam.rotation.y+=(targetRoll-cam.rotation.y)*Math.min(1,dt*3.2);
+     cam.rotation.z+=((-targetRoll*.28-cam.rotation.z)*Math.min(1,dt*3.2));
      var speedKmh=Math.max(0,cockpit3dState.speed||0);var motion=Math.max(.06,speedKmh/2400)*dt*60;terrain.position.z+=motion;
      // Sichtbare Vorwärtsbewegung: Boden und Wolken laufen relativ zum Cockpit nach hinten.
      sc.children.forEach(function(obj){if(obj.userData&&obj.userData.forwardMover){var cm=motion*(obj.userData.parallax||1);obj.position.z+=cm;obj.position.x+=Math.sin(now*.00035+obj.position.z*.01)*cm*.18;if(obj.position.z>25){obj.position.z-=650;obj.position.x=obj.userData.baseX}}});
@@ -123,7 +123,7 @@ function updateCockpit3D(f){
    var dh=d-cockpitPrev.dir;if(dh>180)dh-=360;if(dh<-180)dh+=360;
    turn=Math.max(-8,Math.min(8,dh*1.8));climb=Math.max(-6,Math.min(6,(a-cockpitPrev.alt)/1000));vs=Math.round((a-cockpitPrev.alt)*6);
  }
- cockpit3dState.roll=turn*Math.PI/180;cockpit3dState.pitch=climb*.018;cockpit3dState.speed=v;cockpit3dState.heading=d;cockpit3dState.vs=vs;var altitudeNorm=Math.max(0,Math.min(1,a/42000));var skyLow=new THREE.Color(0x79bce9),skyHigh=new THREE.Color(0x172c52);var sky=skyLow.clone().lerp(skyHigh,altitudeNorm);cockpit3d.sc.background=sky;cockpit3d.sc.fog.color.copy(sky);if(cockpit3d.horizon&&cockpit3d.horizon.material&&cockpit3d.horizon.material.color){cockpit3d.horizon.material.color.copy(skyLow.clone().lerp(new THREE.Color(0x2d527c),altitudeNorm*.8));}
+ cockpit3dState.roll=turn*Math.PI/180;cockpit3dState.pitch=climb*.045;cockpit3dState.speed=v;cockpit3dState.heading=d;cockpit3dState.vs=vs;var altitudeNorm=Math.max(0,Math.min(1,a/42000));var skyLow=new THREE.Color(0x79bce9),skyHigh=new THREE.Color(0x172c52);var sky=skyLow.clone().lerp(skyHigh,altitudeNorm);cockpit3d.sc.background=sky;cockpit3d.sc.fog.color.copy(sky);if(cockpit3d.horizon&&cockpit3d.horizon.material&&cockpit3d.horizon.material.color){cockpit3d.horizon.material.color.copy(skyLow.clone().lerp(new THREE.Color(0x2d527c),altitudeNorm*.8));}
  if(landingMode){
    var db=cockpit3dState.distanceKm,ad=cockpit3dState.approachDiff;
    var runwayOk=db!==null&&db<35&&ad!==null&&ad<25;
