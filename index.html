@@ -63,7 +63,7 @@ function initCockpit3D(){
  if(cockpit3d||!window.THREE)return;
  var c=el('cockpit3d'),r=new THREE.WebGLRenderer({canvas:c,antialias:true});
  r.setPixelRatio(Math.min(devicePixelRatio||1,2));r.setSize(c.clientWidth||innerWidth,c.clientHeight||innerHeight,false);r.outputColorSpace=THREE.SRGBColorSpace;
- var sc=new THREE.Scene();sc.background=new THREE.Color(0x79bce9);sc.fog=new THREE.Fog(0x79bce9,180,700);
+ var sc=new THREE.Scene();sc.background=new THREE.Color(0x79bce9);sc.fog=new THREE.Fog(0x79bce9,120,620);
  var cam=new THREE.PerspectiveCamera(68,1,.05,2000);cam.position.set(0,1.62,2.55);cam.lookAt(0,2,-250);
  sc.add(new THREE.HemisphereLight(0xbfe7ff,0x24351e,2.2));
  var sun=new THREE.DirectionalLight(0xffffff,1.7);sun.position.set(80,120,40);sc.add(sun);
@@ -81,10 +81,10 @@ function initCockpit3D(){
  [-3.48,3.48,0].forEach(function(x){var p=new THREE.Mesh(new THREE.BoxGeometry(.18,4.7,.3),fm);p.position.set(x,2.25,-.35);sc.add(p)});
  var roof=new THREE.Mesh(new THREE.BoxGeometry(7.1,.18,.4),fm);roof.position.set(0,4.5,-.35);sc.add(roof);
  var w=new THREE.Mesh(new THREE.PlaneGeometry(6.75,3.8),glass);w.position.set(0,2.28,-.43);sc.add(w);
- var horizon=new THREE.Mesh(new THREE.PlaneGeometry(180,80),new THREE.MeshBasicMaterial({color:0x75b9e6}));horizon.position.set(0,35,-260);sc.add(horizon);
+ var horizon=new THREE.Mesh(new THREE.PlaneGeometry(180,90),new THREE.MeshBasicMaterial({color:0x75b9e6}));horizon.position.set(0,34,-250);sc.add(horizon);
  var terrain=new THREE.Group();sc.add(terrain);
  var groundMat1=new THREE.MeshStandardMaterial({color:0x49683c,roughness:1}),groundMat2=new THREE.MeshStandardMaterial({color:0x354f2d,roughness:1});
- for(var x=-45;x<=45;x+=3)for(var z=-620;z<50;z+=8){
+ for(var x=-60;x<=60;x+=3)for(var z=-620;z<50;z+=8){
    var h=.3+Math.random()*6,box=new THREE.Mesh(new THREE.BoxGeometry(2.8,h,7),Math.random()>.5?groundMat1:groundMat2);
    box.position.set(x,h/2,z);terrain.add(box);
  }
@@ -92,11 +92,11 @@ function initCockpit3D(){
  for(var rz=-610;rz<40;rz+=16){var mark=new THREE.Mesh(new THREE.BoxGeometry(.35,.045,7),new THREE.MeshBasicMaterial({color:0xffffff}));mark.position.set(0,.07,rz);terrain.add(mark)}
  var side1=new THREE.Mesh(new THREE.BoxGeometry(.18,.05,650),new THREE.MeshBasicMaterial({color:0xffffff}));side1.position.set(-3.2,.07,-285);terrain.add(side1);
  var side2=side1.clone();side2.position.x=3.2;terrain.add(side2);
- for(var k=0;k<18;k++){
+ for(var k=0;k<24;k++){
    var cloud=new THREE.Mesh(new THREE.SphereGeometry(7+Math.random()*8,12,8),new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.7,roughness:1}));
-   cloud.scale.y=.35;cloud.position.set((Math.random()-.5)*90,25+Math.random()*35,-100-Math.random()*500);cloud.userData.forwardMover=true;sc.add(cloud);
+   cloud.scale.y=.35;cloud.position.set((Math.random()-.5)*130,25+Math.random()*45,-80-Math.random()*520);cloud.userData.forwardMover=true;cloud.userData.parallax=0.65+Math.random()*0.8;cloud.userData.baseX=cloud.position.x;sc.add(cloud);
  }
- cockpit3d={r:r,sc:sc,cam:cam,terrain:terrain,runway:runway};runway.visible=false;
+ cockpit3d={r:r,sc:sc,cam:cam,terrain:terrain,runway:runway,horizon:horizon};runway.visible=false;
  function rs(){var W=c.clientWidth||innerWidth,H=c.clientHeight||innerHeight;r.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix()}
  addEventListener('resize',rs);rs();
  function loop(now){
@@ -107,9 +107,9 @@ function initCockpit3D(){
      cam.rotation.x+=(targetPitch-cam.rotation.x)*Math.min(1,dt*4);
      cam.rotation.y+=(targetRoll-cam.rotation.y)*Math.min(1,dt*4);
      cam.rotation.z+=((-targetRoll*.16-cam.rotation.z)*Math.min(1,dt*3));
-     terrain.position.z+=Math.max(.08,cockpit3dState.speed/4500)*dt*60;
+     var speedKmh=Math.max(0,cockpit3dState.speed||0);var motion=Math.max(.06,speedKmh/2400)*dt*60;terrain.position.z+=motion;
      // Sichtbare Vorwärtsbewegung: Boden und Wolken laufen relativ zum Cockpit nach hinten.
-     sc.children.forEach(function(obj){if(obj.userData&&obj.userData.forwardMover){obj.position.z+=Math.max(.08,cockpit3dState.speed/4500)*dt*60;if(obj.position.z>25)obj.position.z-=650}});
+     sc.children.forEach(function(obj){if(obj.userData&&obj.userData.forwardMover){var cm=motion*(obj.userData.parallax||1);obj.position.z+=cm;obj.position.x+=Math.sin(now*.00035+obj.position.z*.01)*cm*.18;if(obj.position.z>25){obj.position.z-=650;obj.position.x=obj.userData.baseX}}});
      if(terrain.position.z>16)terrain.position.z-=620;
    }
    r.render(sc,cam);
@@ -123,12 +123,12 @@ function updateCockpit3D(f){
    var dh=d-cockpitPrev.dir;if(dh>180)dh-=360;if(dh<-180)dh+=360;
    turn=Math.max(-8,Math.min(8,dh*1.8));climb=Math.max(-6,Math.min(6,(a-cockpitPrev.alt)/1000));vs=Math.round((a-cockpitPrev.alt)*6);
  }
- cockpit3dState.roll=turn*Math.PI/180;cockpit3dState.pitch=climb*.018;cockpit3dState.speed=v;cockpit3dState.heading=d;cockpit3dState.vs=vs;
+ cockpit3dState.roll=turn*Math.PI/180;cockpit3dState.pitch=climb*.018;cockpit3dState.speed=v;cockpit3dState.heading=d;cockpit3dState.vs=vs;var altitudeNorm=Math.max(0,Math.min(1,a/42000));var skyLow=new THREE.Color(0x79bce9),skyHigh=new THREE.Color(0x172c52);var sky=skyLow.clone().lerp(skyHigh,altitudeNorm);cockpit3d.sc.background=sky;cockpit3d.sc.fog.color.copy(sky);if(cockpit3d.horizon&&cockpit3d.horizon.material&&cockpit3d.horizon.material.color){cockpit3d.horizon.material.color.copy(skyLow.clone().lerp(new THREE.Color(0x2d527c),altitudeNorm*.8));}
  if(landingMode){
    var db=cockpit3dState.distanceKm,ad=cockpit3dState.approachDiff;
    var runwayOk=db!==null&&db<35&&ad!==null&&ad<25;
-   cockpit3d.runway.visible=runwayOk;
-   if(runwayOk){cockpit3d.runway.rotation.y=(cockpit3dState.runwayBearing||0)*Math.PI/180}
+   cockpit3d.runway.visible=runwayOk;if(!runwayOk){cockpit3d.runway.scale.set(1,1,1);cockpit3d.runway.position.z=-285;}
+   if(runwayOk){var runwayDistance=cockpit3dState.distanceKm;var runwayScale=Math.max(.35,Math.min(1.8,1.8-runwayDistance/30));cockpit3d.runway.scale.set(runwayScale,1,runwayScale);cockpit3d.runway.rotation.y=((cockpit3dState.runwayBearing||0)+90)*Math.PI/180;cockpit3d.runway.position.z=-285+Math.min(210,runwayDistance*5);}
    el('cockpit3dHud').innerHTML='🛬 LIVE LANDING<br>HDG '+Math.round(d)+'° · ALT '+Math.round(a)+' ft<br>SPD '+Math.round(v)+' km/h · VS '+(vs>=0?'+':'')+vs+' ft/min<br>'+((f.arr_iata||f.arr_icao)?'Ziel '+esc(f.arr_iata||f.arr_icao):'Ziel nicht verfügbar')+'<br>'+(db!==null?'Entfernung '+db.toFixed(1)+' km':'Entfernung –')+'<br>'+(runwayOk?'🟢 PISTE IM ANFLUG':'⚪ Noch kein stabiler Anflug');
  }else{
    el('cockpit3dHud').innerHTML='3D COCKPIT<br>HDG '+Math.round(d)+'° · ALT '+Math.round(a)+' ft<br>SPD '+Math.round(v)+' km/h · VS '+(vs>=0?'+':'')+vs+' ft/min';
