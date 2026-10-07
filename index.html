@@ -92,7 +92,7 @@ function initCockpit3D(){
  var side2=side1.clone();side2.position.x=3.2;terrain.add(side2);
  for(var k=0;k<18;k++){
    var cloud=new THREE.Mesh(new THREE.SphereGeometry(7+Math.random()*8,12,8),new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.7,roughness:1}));
-   cloud.scale.y=.35;cloud.position.set((Math.random()-.5)*90,25+Math.random()*35,-100-Math.random()*500);sc.add(cloud);
+   cloud.scale.y=.35;cloud.position.set((Math.random()-.5)*90,25+Math.random()*35,-100-Math.random()*500);cloud.userData.forwardMover=true;sc.add(cloud);
  }
  cockpit3d={r:r,sc:sc,cam:cam,terrain:terrain,runway:runway};runway.visible=false;
  function rs(){var W=c.clientWidth||innerWidth,H=c.clientHeight||innerHeight;r.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix()}
@@ -105,7 +105,7 @@ function initCockpit3D(){
      cam.rotation.x+=(targetPitch-cam.rotation.x)*Math.min(1,dt*4);
      cam.rotation.y+=(targetRoll-cam.rotation.y)*Math.min(1,dt*4);
      cam.rotation.z+=((-targetRoll*.16-cam.rotation.z)*Math.min(1,dt*3));
-     terrain.position.z+=Math.max(.08,cockpit3dState.speed/4500)*dt*60;
+     terrain.position.z+=Math.max(.08,cockpit3dState.speed/4500)*dt*60;\n     // Sichtbare Vorwärtsbewegung: Boden und Wolken laufen relativ zum Cockpit nach hinten.\n     sc.children.forEach(function(obj){if(obj.userData&&obj.userData.forwardMover){obj.position.z+=Math.max(.08,cockpit3dState.speed/4500)*dt*60;if(obj.position.z>25)obj.position.z-=650}});
      if(terrain.position.z>16)terrain.position.z-=620;
    }
    r.render(sc,cam);
